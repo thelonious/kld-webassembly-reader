@@ -1,32 +1,52 @@
-let ReadBuffer = require('../ReadBuffer');
+let Section = require('./Section'),
+    ReadBuffer = require('../ReadBuffer');
 
-class TypeSection {
-    read(buffer) {
-        let count = buffer.readVarUint(32);
-        console.log("type count = %d", count);
+class TypeSection extends Section {
+    constructor() {
+        super(1);
+        this.types = null;
+    }
+
+    get typeName() {
+        return "TypeSection";
+    }
+    
+    read(reader) {
+        let count = reader.readVarUint(32);
+
+        this.types = [];
 
         for (var i = 0; i < count; i++) {
-            console.log("type %d", i);
+            let type = {
+                form: reader.readVarInt(7),
+                params: [],
+                returns: []
+            };
 
-            let form = buffer.readVarInt(7);
-            console.log("form = %d", form);
-
-            let param_count = buffer.readVarUint(32);
-            console.log("param_count = %d", param_count);
+            let param_count = reader.readVarUint(32);
 
             for (var j = 0; j < param_count; j++) {
-                let value_type = buffer.readVarInt(7);
-                console.log("value_type = %d", value_type);
+                type.params.push(reader.readVarInt(7));
             }
 
-            let return_count = buffer.readVarUint(1);
-            console.log("return_count = %d", return_count);
+            let return_count = reader.readVarUint(1);
 
             if (return_count === 1) {
-                let value_type = buffer.readVarInt(7);
-                console.log("value_type = %d", value_type);
+                type.returns.push(reader.readVarInt(7));
             }
+
+            this.types.push(type);
         }
+    }
+
+    toString() {
+        var parts = [super.toString()];
+
+        parts = parts.concat(
+            this.types.map(type => JSON.stringify(type))
+        );
+
+        return parts.join("\n  ");
     }
 }
 

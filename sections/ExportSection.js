@@ -1,21 +1,39 @@
-let ReadBuffer = require('../ReadBuffer');
+let Section = require('./Section'),
+    ReadBuffer = require('../ReadBuffer');
 
-class ExportSection {
+class ExportSection extends Section {
+    constructor() {
+        super(7);
+        this.fields = [];
+    }
+
+    get typeName() {
+        return "ExportSection";
+    }
+
     read(buffer) {
         let count = buffer.readVarUint(32);
-        console.log("count = %d", count);
 
         for (var i = 0; i < count; i++) {
-            console.log("entry %d", i);
+            let field = {};
+
             let field_len = buffer.readVarUint(32);
-            console.log("  field_len = %d", field_len);
-            let field_str = buffer.readBytesAsUTFString(field_len);
-            console.log("  field_str = %s", field_str);
-            let kind = buffer.readUInt8();
-            console.log("  kind = %d", kind);
-            let index = buffer.readVarUint(32);
-            console.log("  index = %d", index);
+            field.str = buffer.readBytesAsUTFString(field_len);
+            field.kind = buffer.readUInt8();
+            field.index = buffer.readVarUint(32);
+
+            this.fields.push(field);
         }
+    }
+
+    toString() {
+        let parts = [super.toString()];
+
+        parts = parts.concat(
+            this.fields.map(field => JSON.stringify(field))
+        );
+
+        return parts.join("\n  ");
     }
 }
 

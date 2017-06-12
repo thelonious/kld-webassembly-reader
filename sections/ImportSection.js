@@ -1,61 +1,68 @@
-let ReadBuffer = require('../ReadBuffer');
+let Section = require('./Section'),
+    ReadBuffer = require('../ReadBuffer');
 
 let FUNCTION = 0,
     TABLE = 1,
     MEMORY = 2,
     GLOBAL = 3;
 
-class ImportSection {
+class ImportSection extends Section {
+    constructor() {
+        super(2);
+        this.imports = [];
+    }
+
+    get typeName() {
+        return "ImportSection";
+    }
+
     read(buffer) {
         let count = buffer.readVarUint(32);
-        console.log("count = %d", count);
 
         for (var i = 0; i < count; i++) {
-            console.log("import entry %d", i);
+            let imp = {};
 
             let module_len = buffer.readVarUint(32);
-            console.log("  module_len = %d", module_len);
-
-            let module_str = buffer.readBytesAsUTFString(module_len);
-            console.log("  module_str = %s", module_str);
+            imp.module_str = buffer.readBytesAsUTFString(module_len);
 
             let field_len = buffer.readVarUint(32);
-            console.log("  field_len = %d", field_len);
+            imp.field_str = buffer.readBytesAsUTFString(field_len);
 
-            let field_str = buffer.readBytesAsUTFString(field_len);
-            console.log("  field_str = %s", field_str);
+            module.kind = buffer.readUInt8();
 
-            let kind = buffer.readUInt8();
-
-            switch (kind) {
+            switch (module.kind) {
                 case FUNCTION:
-                    console.log("  function kind");
-                    let type_number = buffer.readVarUint(32);
-                    console.log("    type_number = %d", type_number);
+                    module.type_number = buffer.readVarUint(32);
                     break;
 
                 case TABLE:
-                    console.log("    table kind");
-                    let table_type = buffer.readTableType();
-                    console.log("    table_type = %s", JSON.stringify(table_type));
+                    module.table_type = buffer.readTableType();
                     break;
 
                 case MEMORY:
-                    console.log("  memory kind");
-                    let resizable_limits = buffer.readResizableLimits();
-                    console.log("     %s", JSON.stringify(resizable_limits));
+                    module.resizable_limits = buffer.readResizableLimits();
                     break;
 
                 case GLOBAL:
-                    console.log("  global kind");
-                    let global_type = buffer.readGlobalType();
-                    console.log("    global_type = %s", JSON.stringify(global_type));
+                    module.global_type = buffer.readGlobalType();
                     break;
 
                 default:
-                    console.error("unknown kind: %d", kind);
+                    console.error("unknown kind: %d", module.kind);
             }
+
+            this.imports.push(imp);
         }
+    }
+
+    toString() {
+        let parts = [super.toString()];
+
+        parts = parts.concat(
+            this.imports.map(imp => JSON.stringify(imp))
+        );
+
+        return parts.join("\n  ");
     }
 }
 

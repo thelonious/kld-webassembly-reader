@@ -1,26 +1,47 @@
-let ReadBuffer = require('../ReadBuffer');
+let Section = require('./Section'),
+    ReadBuffer = require('../ReadBuffer');
 
-class DataSection {
+class DataSection extends Section {
+    constructor() {
+        super(11);
+        this.entries = [];
+    }
+
+    get typeName() {
+        return "DataSection";
+    }
+
     read(buffer) {
         let count = buffer.readVarUint(32);
-        console.log("count = %d", count);
 
         for (var i = 0; i < count; i++) {
-            console.log("entry %d", i);
+            let entry = {
+                index: buffer.readVarUint(32),
+                bytes: []
+            }
 
-            let index = buffer.readVarUint(32);
-            console.log("  index = %d", index);
-
-            // do {
+            do {
                 var byte = buffer.readUInt8();
-                console.log("  byte = %s", byte.toString(16));
-            // } while (byte !== 0);
+
+                entry.bytes.push(byte);
+            } while (byte !== 0x0b);
 
             let size = buffer.readVarUint(32);
-            console.log("  size = %d", size);
 
-            let bytes = buffer.readBytes(size);
+            entry.buffer = buffer.readBytes(size);
+
+            this.entries.push(entry);
         }
+    }
+
+    toString() {
+        let parts = [super.toString()];
+
+        parts = parts.concat(
+            this.entries.map(entry => JSON.stringify(entry))
+        );
+
+        return parts.join("\n  ");
     }
 }
 

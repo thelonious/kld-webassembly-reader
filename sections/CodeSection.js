@@ -1,40 +1,46 @@
-let ReadBuffer = require('../ReadBuffer');
+let Section = require('./Section'),
+    ReadBuffer = require('../ReadBuffer');
 
-let opcodes = require('./opcodes');
+class CodeSection extends Section {
+    constructor() {
+        super(10);
+        this.bodies = [];
+    }
 
-class CodeSection {
+    get typeName() {
+        return "CodeSection";
+    }
+
     read(buffer) {
         let count = buffer.readVarUint(32);
-        console.log("count = %d", count);
 
-        // TODO: read function bodies
         for (var i = 0; i < count; i++) {
-            console.log("function body %d", i);
-
-            let body_size = buffer.readVarUint(32);
-            console.log("  body_size = %d", body_size);
-
-            let local_count = buffer.readVarUint(32);
-            console.log("  local_count = %d", local_count);
-
-            let local_entry_count = buffer.readVarUint(32);
-            console.log("  local_entry_count = %d", local_entry_count);
-
-            let local_type = buffer.readVarUint(7);
-            console.log("  local_type = %d", local_type);
+            let body = {
+                size: buffer.readVarUint(32),
+                local_count: buffer.readVarUint(32),
+                local_entry_count: buffer.readVarUint(32),
+                local_type: buffer.readVarUint(7),
+                bytes: []
+            }
 
             do {
                 var byte = buffer.readUInt8();
-                let mnemonic = opcodes[byte];
-
-                if (mnemonic !== null) {
-                    console.log("  %s", mnemonic);
-                }
-                else {
-                    console.log("  byte = %s", byte.toString(16));
-                }
+                
+                body.bytes.push(byte);
             } while (byte !== 0x0b);
+
+            this.bodies.push(body);
         }
+    }
+
+    toString() {
+        let parts = [super.toString()];
+
+        parts = parts.concat(
+            this.bodies.map(body => JSON.stringify(body))
+        );
+
+        return parts.join("\n  ");
     }
 }
 

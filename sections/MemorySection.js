@@ -1,16 +1,32 @@
-let ReadBuffer = require('../ReadBuffer');
+let Section = require('./Section'),
+    ReadBuffer = require('../ReadBuffer');
 
-class MemorySection {
+class MemorySection extends Section {
+    constructor() {
+        super(5);
+        this.entries = [];
+    }
+
+    get typeName() {
+        return "MemorySection";
+    }
+
     read(buffer) {
         let count = buffer.readVarUint(32);
-        console.log("count = %d", count);
 
         for (var i = 0; i < count; i++) {
-            console.log("entry %d", i);
-            let entry = buffer.readResizableLimits();
-
-            console.log("entry = %d", JSON.stringify(entry));
+            this.entries.push(buffer.readResizableLimits());
         }
+    }
+
+    toString() {
+        let parts = [super.toString()];
+
+        parts = parts.concat(
+            this.entries.map(entry => JSON.stringify(entry))
+        );
+
+        return parts.join("\n  ");
     }
 }
 

@@ -26,40 +26,25 @@ let sectionCount = 0;
 console.log("magic = %s", reader.readUInt32().toString(16));
 console.log("version = %s", reader.readUInt32());
 
-while (!reader.eof()) {
-    let startPosition = reader.position();
+while (reader.eof === false) {
+    let startPosition = reader.position;
     let id = reader.readVarUint(7);
     let payload_len = reader.readVarUint(32);
-
-    console.log();
-    console.log("#%d: type=%d", sectionCount, id);
-    console.log("payload_len = %s", payload_len);
-
-    if (id === 0) {
-        let startPosition = reader.position();
-        let name_len = reader.readVarUint(32);
-        let name = reader.readBytesAsUTFString(name_len);
-
-        console.log("name_len = %s", name_len);
-        console.log("name = %s", name);
-
-        reader.seek(startPosition);
-    }
-
     let payloadBuffer = reader.readBytesIntoReadBuffer(payload_len);
     let section = new sectionClasses[id]();
+
     section.read(payloadBuffer);
+    console.log();
+    console.log(section.toString());
 
     sectionCount++;
 
-    if (reader.position() === startPosition) {
+    if (reader.position === startPosition) {
         console.log("Aborting because reader did not advance when reading the last section");
         break;
     }
-    if (reader.position() < startPosition) {
+    if (reader.position < startPosition) {
         console.log("Aborting because reader moved backwards when reading the last section");
         break;
     }
 }
-
-console.log("done");

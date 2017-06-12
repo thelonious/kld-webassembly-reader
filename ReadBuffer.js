@@ -6,12 +6,16 @@ module.exports = class ReadBuffer {
         this.offset = 0;
     }
 
-    eof() {
+    get eof() {
         return this.offset >= this.buffer.length;
     }
 
-    position() {
+    get position() {
         return this.offset;
+    }
+
+    get length() {
+        return this.buffer.length;
     }
 
     seek(position) {
