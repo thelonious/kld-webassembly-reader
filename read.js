@@ -1,22 +1,22 @@
 #!/usr/bin/env node
 
 let fs = require('fs'),
-    ReadBuffer = require('./ReadBuffer');
+    ReadBuffer = require('./lib/ReadBuffer');
     
 
 let sectionClasses = [
-    require('./sections/CustomSection'),
-    require('./sections/TypeSection'),
-    require('./sections/ImportSection'),
-    require('./sections/FunctionSection'),
-    require('./sections/TableSection'),
-    require('./sections/MemorySection'),
-    require('./sections/GlobalSection'),
-    require('./sections/ExportSection'),
-    require('./sections/StartSection'),
-    require('./sections/ElementSection'),
-    require('./sections/CodeSection'),
-    require('./sections/DataSection')
+    require('./lib/sections/CustomSection'),
+    require('./lib/sections/TypeSection'),
+    require('./lib/sections/ImportSection'),
+    require('./lib/sections/FunctionSection'),
+    require('./lib/sections/TableSection'),
+    require('./lib/sections/MemorySection'),
+    require('./lib/sections/GlobalSection'),
+    require('./lib/sections/ExportSection'),
+    require('./lib/sections/StartSection'),
+    require('./lib/sections/ElementSection'),
+    require('./lib/sections/CodeSection'),
+    require('./lib/sections/DataSection')
 ];
 
 let bytes = fs.readFileSync("./counter.wasm");
